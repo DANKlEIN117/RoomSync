@@ -65,35 +65,40 @@ def notify_enrolled_students(lecture):
 
 # SEED — ROOMS
 def seed_rooms():
-    if Room.query.count() > 0:
-        print("Rooms already seeded."); return
-
     rooms = [
-        Room(name="LT1",   capacity=200, room_type="lecture_hall", building="Main Block"),
-        Room(name="LT2",   capacity=200, room_type="lecture_hall", building="Main Block"),
-        Room(name="LT3",   capacity=150, room_type="lecture_hall", building="Science Block"),
-        Room(name="LT4",   capacity=150, room_type="lecture_hall", building="Science Block"),
-        Room(name="LT5",   capacity=100, room_type="lecture_hall", building="Engineering Block"),
-        Room(name="LT6",   capacity=100, room_type="lecture_hall", building="Engineering Block"),
-        Room(name="Lab 1", capacity=40,  room_type="lab",          building="ICT Block"),
-        Room(name="Lab 2", capacity=40,  room_type="lab",          building="ICT Block"),
-        Room(name="Lab 3", capacity=35,  room_type="lab",          building="ICT Block"),
-        Room(name="Lab 4", capacity=35,  room_type="lab",          building="Science Block"),
-        Room(name="SR1",   capacity=30,  room_type="seminar",      building="Main Block"),
-        Room(name="SR2",   capacity=30,  room_type="seminar",      building="Main Block"),
-        Room(name="SR3",   capacity=25,  room_type="seminar",      building="Engineering Block"),
+        ("LT1", 200, "lecture_hall", "Main Block"),
+        ("LT2", 200, "lecture_hall", "Main Block"),
+        ("LT3", 150, "lecture_hall", "Science Block"),
+        ("LT4", 150, "lecture_hall", "Science Block"),
+        ("LT5", 100, "lecture_hall", "Engineering Block"),
+        ("LT6", 100, "lecture_hall", "Engineering Block"),
+        ("Lab 1", 40, "lab", "ICT Block"),
+        ("Lab 2", 40, "lab", "ICT Block"),
+        ("Lab 3", 35, "lab", "ICT Block"),
+        ("Lab 4", 35, "lab", "Science Block"),
+        ("SR1", 30, "seminar", "Main Block"),
+        ("SR2", 30, "seminar", "Main Block"),
+        ("SR3", 25, "seminar", "Engineering Block"),
     ]
-    db.session.add_all(rooms)
+
+    for name, capacity, room_type, building in rooms:
+        existing = Room.query.filter_by(name=name).first()
+
+        if existing:
+            continue
+
+        db.session.add(Room(
+            name=name,
+            capacity=capacity,
+            room_type=room_type,
+            building=building
+        ))
+
     db.session.commit()
-    print(f"✅ Seeded {len(rooms)} rooms.")
-
-
 
 # SEED — SCHOOLS & PROGRAMMES
 
 def seed_schools_and_programmes():
-    if School.query.count() > 0:
-        print("Schools already seeded."); return
 
     data = [
         {
@@ -157,6 +162,7 @@ def seed_schools_and_programmes():
             ],
         },
     ]
+    
 
     for s in data:
         school = School(name=s['name'], code=s['code'], description=s['description'])
@@ -164,6 +170,11 @@ def seed_schools_and_programmes():
         db.session.flush()
 
         for p in s['programmes']:
+            existing = Programme.query.filter_by(code=p['code']).first()
+
+            if existing:
+                continue
+
             prog = Programme(
                 name=p['name'],
                 code=p['code'],
@@ -179,8 +190,6 @@ def seed_schools_and_programmes():
 
 # SEED — SAMPLE COURSES  (BIT only as example)
 def seed_sample_courses():
-    if Course.query.count() > 0:
-        print("Courses already seeded."); return
 
     # fetch programmes safely
     scit = Programme.query.filter_by(code='SCIT').first()
@@ -193,7 +202,6 @@ def seed_sample_courses():
         return
 
     courses = [
-        # ───────── SCIT (Computing / IT) ─────────
         Course(code='SCIT 1101', name='Introduction to Programming', year=1, semester=1, programme_id=scit.id),
         Course(code='SCIT 1102', name='Computer Fundamentals', year=1, semester=1, programme_id=scit.id),
         Course(code='SCIT 1201', name='Data Structures', year=1, semester=2, programme_id=scit.id),
@@ -206,23 +214,30 @@ def seed_sample_courses():
         Course(code='SCIT 3102', name='Software Engineering', year=3, semester=1, programme_id=scit.id),
         Course(code='SCIT 3201', name='Mobile App Development', year=3, semester=2, programme_id=scit.id),
 
-        # ───────── SOBE (Business) ─────────
         Course(code='SOBE 1101', name='Introduction to Business', year=1, semester=1, programme_id=sobe.id),
         Course(code='SOBE 1102', name='Business Mathematics', year=1, semester=1, programme_id=sobe.id),
         Course(code='SOBE 2101', name='Principles of Management', year=2, semester=1, programme_id=sobe.id),
 
-        # ───────── SEEIE (Electrical / Electronic) ─────────
         Course(code='SEEIE 1101', name='Circuit Theory', year=1, semester=1, programme_id=seeie.id),
         Course(code='SEEIE 1102', name='Engineering Mathematics', year=1, semester=1, programme_id=seeie.id),
         Course(code='SEEIE 2101', name='Digital Electronics', year=2, semester=1, programme_id=seeie.id),
 
-        # ───────── SOMMME (Mechanical) ─────────
         Course(code='SOMMME 1101', name='Engineering Drawing', year=1, semester=1, programme_id=sommme.id),
         Course(code='SOMMME 1102', name='Statics', year=1, semester=1, programme_id=sommme.id),
         Course(code='SOMMME 2101', name='Thermodynamics', year=2, semester=1, programme_id=sommme.id),
     ]
 
-    db.session.add_all(courses)
+    inserted = 0
+
+    for course in courses:
+        existing = Course.query.filter_by(code=course.code).first()
+
+        if existing:
+            continue
+
+        db.session.add(course)
+        inserted += 1
+
     db.session.commit()
 
-    print(f"✅ Seeded {len(courses)} courses aligned to schools/programmes.")
+    print(f"✅ Seeded {inserted} new courses safely.")

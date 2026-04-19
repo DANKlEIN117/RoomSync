@@ -82,9 +82,12 @@ def register():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for(
-            'lecturer_dashboard' if current_user.role == 'lecturer' else 'student_dashboard'
-        ))
+        if user.role == 'admin':
+            return redirect(url_for('admin_dashboard'))
+        elif user.role == 'lecturer':
+            return redirect(url_for('lecturer_dashboard'))
+        else:
+            return redirect(url_for('student_dashboard'))
 
     if request.method == 'POST':
         email    = request.form.get('email', '').strip()
@@ -93,9 +96,12 @@ def login():
 
         if user and check_password_hash(user.password, password):
             login_user(user)
-            return redirect(url_for(
-                'lecturer_dashboard' if user.role == 'lecturer' else 'student_dashboard'
-            ))
+            if current_user.role == 'admin':
+                return redirect(url_for('admin_dashboard'))
+            elif current_user.role == 'lecturer':
+                return redirect(url_for('lecturer_dashboard'))
+            else:
+                return redirect(url_for('student_dashboard'))
 
         flash('Invalid email or password.', 'error')
 
@@ -368,7 +374,7 @@ def delete_lecture(lecture_id):
 @app.route('/admin/dashboard')
 @login_required
 def admin_dashboard():
-    if current_user.role != 'lecturer':  # later change to 'admin'
+    if current_user.role != 'admin':
         flash('Access denied.', 'error')
         return redirect(url_for('login'))
 
@@ -407,6 +413,9 @@ def admin_dashboard():
 @app.route('/admin/seed-rooms')
 @login_required
 def admin_seed_rooms():
+    if current_user.role != 'admin':
+        flash('Access denied.', 'error')
+        return redirect(url_for('login'))
     seed_rooms()
     flash('Rooms seeded successfully.', 'success')
     return redirect(url_for('admin_dashboard'))
@@ -415,6 +424,9 @@ def admin_seed_rooms():
 @app.route('/admin/seed-schools')
 @login_required
 def admin_seed_schools():
+    if current_user.role != 'admin':
+        flash('Access denied.', 'error')
+        return redirect(url_for('login'))
     seed_schools_and_programmes()
     flash('Schools and programmes seeded.', 'success')
     return redirect(url_for('admin_dashboard'))
@@ -423,6 +435,9 @@ def admin_seed_schools():
 @app.route('/admin/seed-courses')
 @login_required
 def admin_seed_courses():
+    if current_user.role != 'admin':
+        flash('Access denied.', 'error')
+        return redirect(url_for('login'))
     seed_sample_courses()
     flash('Sample courses seeded.', 'success')
     return redirect(url_for('admin_dashboard'))
@@ -431,6 +446,9 @@ def admin_seed_courses():
 @app.route('/admin/assign-lecturer', methods=['GET', 'POST'])
 @login_required
 def admin_assign_lecturer():
+    if current_user.role != 'admin':
+        flash('Access denied.', 'error')
+        return redirect(url_for('login'))
     if request.method == 'POST':
         course_id   = int(request.form.get('course_id'))
         lecturer_id = int(request.form.get('lecturer_id'))
