@@ -137,7 +137,6 @@ def student_dashboard():
                            unread=unread)
 
 
-
 # NOTIFICATIONS — mark as read (AJAX)
 @app.route('/notifications/mark-read', methods=['POST'])
 @login_required
@@ -243,7 +242,7 @@ def lecturer_dashboard():
 
 
 
-# ROOMS — available (AJAX)
+# ROOMS available (AJAX)
 @app.route('/rooms/available', methods=['POST'])
 @login_required
 def available_rooms():
@@ -299,24 +298,24 @@ def create_lecture():
         flash('Start time must be before end time.', 'error')
         return redirect(url_for('lecturer_dashboard'))
 
-    # Guard 1 — verify lecturer owns this course
+    # Guard 1 verify lecturer owns this course
     course = Course.query.get_or_404(course_id)
     if course.lecturer_id != current_user.id:
         flash('You are not assigned to that course.', 'error')
         return redirect(url_for('lecturer_dashboard'))
 
-    # Guard 2 — lecturer personal conflict
+    # Guard 2 lecturer personal conflict
     if check_lecturer_conflict(current_user.id, day, start, end):
         flash('You already have a lecture during this time slot.', 'error')
         return redirect(url_for('lecturer_dashboard'))
 
-    # Guard 3 — room still free? (race condition)
+    # Guard 3 room still free? (race condition)
     free_ids = {r.id for r in get_available_rooms(day, start, end)}
     if room_id not in free_ids:
         flash('That room was just taken. Please select another.', 'error')
         return redirect(url_for('lecturer_dashboard'))
 
-    # ── Save lecture ──
+    # Save lecture
     lecture = Lecture(
         course_id   = course_id,
         room_id     = room_id,
@@ -363,15 +362,52 @@ def delete_lecture(lecture_id):
 
 
 
-# ADMIN — SEED  (run once each, then protect/remove)
+# ADMIN SEED
+@app.route('/admin/dashboard')
+@login_required
+def admin_dashboard():
+    if current_user.role != 'lecturer':  # later change to 'admin'
+        flash('Access denied.', 'error')
+        return redirect(url_for('login'))
+
+    # Core data
+    rooms = Room.query.all()
+    schools = School.query.all()
+    programmes = Programme.query.all()
+    courses = Course.query.all()
+
+    lecturers = User.query.filter_by(role='lecturer').all()
+    students = User.query.filter_by(role='student').all()
+
+    # Stats
+    total_lectures = Lecture.query.count()
+    assigned_courses = Course.query.filter(Course.lecturer_id.isnot(None)).count()
+    unassigned_courses = Course.query.filter_by(lecturer_id=None).count()
+
+    # Recent lectures
+    recent_lectures = Lecture.query.order_by(Lecture.id.desc()).limit(10).all()
+
+    return render_template(
+        "admin_dashboard.html",
+        rooms=rooms,
+        schools=schools,
+        programmes=programmes,
+        courses=courses,
+        lecturers=lecturers,
+        students=students,
+        total_lectures=total_lectures,
+        assigned_courses=assigned_courses,
+        unassigned_courses=unassigned_courses,
+        recent_lectures=recent_lectures
+    )
 
 
 @app.route('/admin/seed-rooms')
 @login_required
 def admin_seed_rooms():
     seed_rooms()
-    flash('Rooms seeded.', 'success')
-    return redirect(url_for('lecturer_dashboard'))
+    flash('Rooms seeded successfully.', 'success')
+    return redirect(url_for('admin_dashboard'))
 
 
 @app.route('/admin/seed-schools')
@@ -379,7 +415,7 @@ def admin_seed_rooms():
 def admin_seed_schools():
     seed_schools_and_programmes()
     flash('Schools and programmes seeded.', 'success')
-    return redirect(url_for('lecturer_dashboard'))
+    return redirect(url_for('admin_dashboard'))
 
 
 @app.route('/admin/seed-courses')
@@ -387,38 +423,25 @@ def admin_seed_schools():
 def admin_seed_courses():
     seed_sample_courses()
     flash('Sample courses seeded.', 'success')
-    return redirect(url_for('lecturer_dashboard'))
+    return redirect(url_for('admin_dashboard'))
 
 
-
-# ADMIN — ASSIGN LECTURER TO COURSE
 @app.route('/admin/assign-lecturer', methods=['GET', 'POST'])
 @login_required
 def admin_assign_lecturer():
-    """
-    Simple assignment page. In production, protect with an admin role check.
-    GET  — show all courses + all lecturers
-    POST — assign lecturer_id to course_id
-    """
     if request.method == 'POST':
         course_id   = int(request.form.get('course_id'))
         lecturer_id = int(request.form.get('lecturer_id'))
-
-        course = Course.query.get_or_404(course_id)
+        course   = Course.query.get_or_404(course_id)
         lecturer = User.query.get_or_404(lecturer_id)
-
         if lecturer.role != 'lecturer':
             flash('Selected user is not a lecturer.', 'error')
         else:
             course.lecturer_id = lecturer_id
             db.session.commit()
             flash(f'{lecturer.name} assigned to {course.code} — {course.name}.', 'success')
-
-        return redirect(url_for('admin_assign_lecturer'))
-
-    courses   = Course.query.order_by(Course.programme_id, Course.year, Course.code).all()
-    lecturers = User.query.filter_by(role='lecturer').order_by(User.name).all()
-    return render_template('admin_assign.html', courses=courses, lecturers=lecturers)
+        return redirect(url_for('admin_dashboard'))
+    return redirect(url_for('admin_dashboard'))
 
 
 

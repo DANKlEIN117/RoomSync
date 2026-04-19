@@ -278,7 +278,7 @@
             <div class="stat-card cv"><div class="stat-icon v">📚</div><div class="stat-val v">{{ lectures|length }}</div><div class="stat-label">My Lectures</div></div>
             <div class="stat-card cb"><div class="stat-icon b">🎓</div><div class="stat-val b">{{ courses|length }}</div><div class="stat-label">My Courses</div></div>
             <div class="stat-card ca"><div class="stat-icon a">👥</div>
-                <div class="stat-val a">{{ courses | sum(attribute='enrollments') | list | length if courses else 0 }}</div>
+                <div class="stat-val a">{{ courses | map(attribute='enrollments') | map('length') | sum }}</div>
                 <div class="stat-label">Total Students</div></div>
             <div class="stat-card ct"><div class="stat-icon t">🏛️</div><div class="stat-val t">{{ lectures | map(attribute='room_id') | list | unique | list | length }}</div><div class="stat-label">Rooms Used</div></div>
         </div>
