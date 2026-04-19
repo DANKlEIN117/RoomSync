@@ -3,6 +3,7 @@ from flask_login import LoginManager, login_user, logout_user, login_required, c
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 from sqlalchemy.exc import IntegrityError
+from flask_migrate import Migrate
 
 from models import db, User, School, Programme, Course, Room, Lecture, Enrollment, Notification
 from scheduler import (get_available_rooms, check_lecturer_conflict,
@@ -15,6 +16,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite3'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
+migrate = Migrate(app, db)
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -443,11 +445,6 @@ def admin_assign_lecturer():
         return redirect(url_for('admin_dashboard'))
     return redirect(url_for('admin_dashboard'))
 
-
-
-# DB INIT & RUN
-with app.app_context():
-    db.create_all()
 
 if __name__ == '__main__':
     app.run(debug=True)
