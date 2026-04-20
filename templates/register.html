@@ -3,13 +3,13 @@
 <head>
     <title>Sign Up - JKUAT Scheduler</title>
     <link rel="icon" type="image/png" href="/static/images/jkuat-logo.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
         :root {
             --navy:    #0a0f1e;
-            --deep:    #0d1530;
             --accent:  #2563ff;
             --accent2: #00e5c3;
             --purple:  #7c3aed;
@@ -18,22 +18,21 @@
             --text:    #e8ecf4;
             --muted:   rgba(232,236,244,0.5);
             --input-bg:rgba(255,255,255,0.05);
-            --error:   #ff4d6d;
-            --success: #00e5c3;
         }
 
-        html, body { height: 100%; }
+        html { height: 100%; }
 
         body {
             font-family: 'DM Sans', sans-serif;
             min-height: 100vh;
+            min-height: 100dvh;
             background: var(--navy);
             color: var(--text);
             display: flex;
             overflow-x: hidden;
         }
 
-        /* ── Animated background ───────────────────────────── */
+        /* ── Background ── */
         .bg-layer {
             position: fixed; inset: 0; z-index: 0; pointer-events: none;
             background:
@@ -49,29 +48,25 @@
                 linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
             background-size: 56px 56px;
         }
-        .orb {
-            position: fixed; border-radius: 50%; filter: blur(90px);
-            pointer-events: none; z-index: 0;
-            animation: drift 18s ease-in-out infinite alternate;
-        }
+        .orb { position: fixed; border-radius: 50%; filter: blur(90px); pointer-events: none; z-index: 0; animation: drift 18s ease-in-out infinite alternate; }
         .orb-1 { width:380px; height:380px; background:var(--accent);  opacity:.12; top:-100px;   left:-60px;  animation-duration:20s; }
         .orb-2 { width:260px; height:260px; background:var(--purple);  opacity:.14; top:40%;      right:-40px; animation-duration:15s; animation-direction:alternate-reverse; }
         .orb-3 { width:200px; height:200px; background:var(--accent2); opacity:.10; bottom:-60px; left:30%;    animation-duration:22s; }
         @keyframes drift { from{transform:translate(0,0) scale(1)} to{transform:translate(30px,25px) scale(1.06)} }
 
-        /* ── Layout ────────────────────────────────────────── */
+        /* ── Page wrapper ── */
         .page {
             position: relative; z-index: 1;
-            width: 100%; min-height: 100vh;
+            width: 100%; min-height: 100vh; min-height: 100dvh;
             display: flex; align-items: stretch;
         }
 
-        /* ── Left decorative panel ─────────────────────────── */
+        /* ══════════════════════════════════════
+           LEFT DECORATIVE PANEL  — desktop only
+        ══════════════════════════════════════ */
         .deco-panel {
             display: none;
-            flex: 1;
-            position: relative;
-            overflow: hidden;
+            flex: 1; position: relative; overflow: hidden;
         }
         @media (min-width: 960px) { .deco-panel { display: flex; flex-direction: column; } }
 
@@ -84,11 +79,10 @@
         @keyframes slowZoom { from{transform:scale(1)} to{transform:scale(1.07)} }
 
         .deco-overlay {
-            position: absolute; inset: 0;
+            position: absolute; inset: 0; z-index: 1;
             background:
                 linear-gradient(to right, rgba(10,15,30,.1) 0%, rgba(10,15,30,.65) 100%),
                 linear-gradient(to bottom, rgba(10,15,30,.4) 0%, transparent 35%, rgba(10,15,30,.6) 100%);
-            z-index: 1;
         }
         .deco-grid {
             position: absolute; inset: 0; z-index: 2;
@@ -97,8 +91,6 @@
                 linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px);
             background-size: 48px 48px;
         }
-
-        /* top-left brand on photo */
         .deco-brand {
             position: absolute; top: 36px; left: 36px; z-index: 4;
             display: flex; align-items: center; gap: 12px;
@@ -107,8 +99,6 @@
         .deco-brand img { width: 42px; height: 42px; object-fit: contain; filter: brightness(1.15); }
         .deco-brand-text { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; color: #fff; line-height: 1.3; }
         .deco-brand-text small { display: block; font-size: 11px; font-weight: 400; opacity: .6; }
-
-        /* steps / feature list on photo */
         .deco-steps {
             position: absolute; bottom: 52px; left: 40px; right: 40px; z-index: 4;
             animation: fadeUp .9s .5s cubic-bezier(.22,1,.36,1) both;
@@ -124,10 +114,8 @@
         .step-list { display: flex; flex-direction: column; gap: 14px; }
         .step-item {
             display: flex; align-items: center; gap: 14px;
-            background: rgba(255,255,255,.06);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,.10);
-            border-radius: 12px; padding: 12px 16px;
+            background: rgba(255,255,255,.06); backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,.10); border-radius: 12px; padding: 12px 16px;
             transition: background .25s;
         }
         .step-item:hover { background: rgba(255,255,255,.10); }
@@ -135,23 +123,35 @@
             width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
             display: flex; align-items: center; justify-content: center;
             font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700;
-            background: linear-gradient(135deg, var(--accent), var(--accent2));
-            color: #fff;
+            background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff;
         }
         .step-text { font-size: 13px; color: rgba(255,255,255,.8); line-height: 1.4; }
         .step-text strong { color: #fff; display: block; font-size: 13px; }
 
-        /* ── Right form panel ──────────────────────────────── */
+        /* ══════════════════════════════════════
+           RIGHT FORM PANEL
+        ══════════════════════════════════════ */
         .form-panel {
             width: 100%;
             max-width: 520px;
             display: flex; flex-direction: column;
             align-items: center; justify-content: center;
-            padding: 48px 44px;
+            /* Mobile: safe-area + generous padding */
+            padding: max(env(safe-area-inset-top, 28px), 28px) 20px
+                     max(env(safe-area-inset-bottom, 24px), 28px);
             background: rgba(10,15,30,.95);
             border-left: 1px solid var(--border);
             position: relative; overflow: hidden;
         }
+
+        @media (min-width: 480px) { .form-panel { padding: 40px 36px; } }
+        @media (min-width: 520px) { .form-panel { padding: 48px 44px; } }
+
+        /* Allow scroll on short phones */
+        @media (max-height: 700px) {
+            .form-panel { justify-content: flex-start; padding-top: 32px; overflow-y: auto; }
+        }
+
         .form-panel::before {
             content: ''; position: absolute;
             width: 500px; height: 500px; border-radius: 50%;
@@ -159,153 +159,168 @@
             top: -150px; right: -150px; pointer-events: none;
         }
 
-        .form-inner { width: 100%; max-width: 400px; position: relative; z-index: 1; }
+        .form-inner {
+            width: 100%; max-width: 400px;
+            position: relative; z-index: 1;
+        }
 
-        /* mobile logo */
+        /* ── Mobile header (shown below 960px) ── */
         .mobile-brand {
-            display: flex; align-items: center; gap: 10px;
-            margin-bottom: 36px;
+            display: flex; align-items: center; gap: 12px;
+            margin-bottom: 28px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--border);
         }
         @media (min-width: 960px) { .mobile-brand { display: none; } }
-        .mobile-brand img { width: 34px; height: 34px; object-fit: contain; }
-        .mobile-brand span { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; }
 
-        /* heading */
+        .mobile-brand img { width: 38px; height: 38px; object-fit: contain; flex-shrink: 0; }
+        .mobile-brand-text { flex: 1; min-width: 0; }
+        .mobile-brand-text strong {
+            display: block;
+            font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 800;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .mobile-brand-text small { font-size: 11px; color: var(--muted); }
+
+        /* ── Heading ── */
         .form-head {
-            margin-bottom: 30px;
+            margin-bottom: 22px;
             animation: fadeUp .7s .1s cubic-bezier(.22,1,.36,1) both;
         }
         .form-head h1 {
-            font-family: 'Syne', sans-serif; font-size: 1.9rem; font-weight: 800;
-            line-height: 1.1; margin-bottom: 8px;
+            font-family: 'Syne', sans-serif;
+            font-size: clamp(1.6rem, 5vw, 1.9rem);
+            font-weight: 800; line-height: 1.1; margin-bottom: 6px;
         }
-        .form-head p { font-size: 13.5px; color: var(--muted); line-height: 1.6; }
+        .form-head p { font-size: 13px; color: var(--muted); line-height: 1.6; }
 
-        /* role selector */
+        /* ── Role selector ── */
         .role-selector {
             display: grid; grid-template-columns: 1fr 1fr;
-            gap: 10px; margin-bottom: 24px;
+            gap: 10px; margin-bottom: 20px;
             animation: fadeUp .7s .2s cubic-bezier(.22,1,.36,1) both;
         }
-        .role-btn {
-            position: relative; cursor: pointer;
-        }
+        .role-btn { position: relative; cursor: pointer; }
         .role-btn input[type="radio"] { position: absolute; opacity: 0; width: 0; height: 0; }
         .role-card {
             display: flex; flex-direction: column; align-items: center;
-            gap: 8px; padding: 16px 12px;
-            border: 1px solid var(--border);
-            border-radius: 14px; background: var(--input-bg);
+            gap: 6px; padding: 14px 10px;
+            border: 1px solid var(--border); border-radius: 14px;
+            background: var(--input-bg);
             transition: border-color .2s, background .2s, box-shadow .2s;
             text-align: center;
+            -webkit-tap-highlight-color: transparent;
         }
-        .role-icon { font-size: 22px; }
+        .role-icon { font-size: 20px; }
         .role-label { font-size: 12px; font-weight: 600; color: var(--muted); transition: color .2s; letter-spacing: .03em; }
-        .role-email { font-size: 10px; color: rgba(232,236,244,.3); font-family: monospace; margin-top: 2px; transition: color .2s; }
-
+        .role-email { font-size: 9px; color: rgba(232,236,244,.3); font-family: monospace; margin-top: 1px; transition: color .2s; }
         .role-btn input:checked + .role-card {
             border-color: var(--accent);
             background: rgba(37,99,255,.10);
-            box-shadow: 0 0 0 3px rgba(37,99,255,.15), inset 0 0 20px rgba(37,99,255,.05);
+            box-shadow: 0 0 0 3px rgba(37,99,255,.15);
         }
         .role-btn input:checked + .role-card .role-label { color: var(--accent2); }
         .role-btn input:checked + .role-card .role-email { color: rgba(0,229,195,.6); }
         .role-card:hover { border-color: rgba(255,255,255,.18); background: rgba(255,255,255,.07); }
 
-        /* fields */
-        .fields { display: flex; flex-direction: column; gap: 14px; }
-
-        .field {
-            animation: fadeUp .6s both;
-        }
+        /* ── Fields ── */
+        .fields { display: flex; flex-direction: column; gap: 12px; }
+        .field { animation: fadeUp .6s both; }
         .field:nth-child(1){animation-delay:.28s}
         .field:nth-child(2){animation-delay:.36s}
         .field:nth-child(3){animation-delay:.44s}
 
-        .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        /* Name row — two columns on tablet+, single column on phones */
+        .field-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        @media (max-width: 380px) { .field-row { grid-template-columns: 1fr; } }
 
         label {
             display: block; font-size: 11px; font-weight: 600;
             letter-spacing: .07em; color: var(--muted);
-            margin-bottom: 7px; text-transform: uppercase;
+            margin-bottom: 6px; text-transform: uppercase;
         }
 
         .input-wrap { position: relative; }
         .input-wrap .i-icon {
-            position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
+            position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
             color: var(--muted); pointer-events: none; transition: color .2s;
             display: flex; align-items: center;
         }
         .input-wrap:focus-within .i-icon { color: var(--accent2); }
 
+        /* 16px font prevents iOS zoom; padding gives ≥44px tap height */
         input[type="text"],
         input[type="email"],
         input[type="password"] {
-            width: 100%; padding: 12px 12px 12px 40px;
+            width: 100%; padding: 13px 13px 13px 38px;
             background: var(--input-bg);
             border: 1px solid var(--border);
             border-radius: 11px;
-            color: var(--text); font-size: 13.5px; font-family: 'DM Sans', sans-serif;
+            color: var(--text); font-size: 16px;
+            font-family: 'DM Sans', sans-serif;
             outline: none;
             transition: border-color .2s, background .2s, box-shadow .2s;
+            -webkit-tap-highlight-color: transparent;
         }
-        input::placeholder { color: rgba(232,236,244,.25); }
+        input::placeholder { color: rgba(232,236,244,.25); font-size: 14px; }
         input:focus {
             border-color: rgba(37,99,255,.55);
             background: rgba(37,99,255,.07);
             box-shadow: 0 0 0 3px rgba(37,99,255,.10);
         }
 
-        /* password strength */
-        .pwd-meta { display: flex; align-items: center; justify-content: space-between; margin-top: 8px; }
+        /* ── Password strength ── */
+        .pwd-meta { display: flex; align-items: center; justify-content: space-between; margin-top: 7px; }
         .strength-bar { display: flex; gap: 4px; flex: 1; }
-        .strength-seg {
-            height: 3px; border-radius: 99px; flex: 1;
-            background: rgba(255,255,255,.08);
-            transition: background .35s;
-        }
+        .strength-seg { height: 3px; border-radius: 99px; flex: 1; background: rgba(255,255,255,.08); transition: background .35s; }
         .strength-seg.weak   { background: #ff4d6d; }
         .strength-seg.fair   { background: #f59e0b; }
         .strength-seg.strong { background: var(--accent2); }
         .strength-label { font-size: 11px; color: var(--muted); margin-left: 10px; min-width: 44px; text-align: right; transition: color .3s; }
 
-        /* eye toggle */
+        /* Eye toggle — bigger tap area */
         .eye-btn {
-            position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+            position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
             background: none; border: none; cursor: pointer;
-            color: var(--muted); padding: 4px; transition: color .2s; display:flex;
+            color: var(--muted); padding: 10px;
+            transition: color .2s; display: flex;
+            -webkit-tap-highlight-color: transparent;
         }
         .eye-btn:hover { color: var(--text); }
 
-        /* email hint */
+        /* ── Email hint ── */
         .email-hint {
-            margin-top: 7px; font-size: 11px; color: rgba(232,236,244,.35);
-            line-height: 1.5; display: flex; align-items: flex-start; gap: 6px;
+            margin-top: 6px; font-size: 11px; color: rgba(232,236,244,.35);
+            line-height: 1.5; display: flex; align-items: flex-start; gap: 5px;
         }
         .email-hint svg { flex-shrink: 0; margin-top: 1px; color: var(--accent2); }
 
-        /* terms */
+        /* ── Terms ── */
         .terms-row {
             display: flex; align-items: flex-start; gap: 10px;
-            margin: 20px 0 22px;
+            margin: 16px 0 18px;
             animation: fadeUp .7s .52s cubic-bezier(.22,1,.36,1) both;
         }
+        /* Larger checkbox tap target */
         .terms-row input[type="checkbox"] {
-            width: 16px; height: 16px; min-width: 16px; padding: 0;
-            border-radius: 4px; margin-top: 2px; cursor: pointer;
-            accent-color: var(--accent);
+            width: 20px; height: 20px; min-width: 20px;
+            border-radius: 4px; margin-top: 1px; cursor: pointer;
+            accent-color: var(--accent); flex-shrink: 0;
         }
         .terms-row label {
             font-size: 12px; text-transform: none; letter-spacing: 0;
-            color: var(--muted); line-height: 1.55; cursor: pointer;
-            font-weight: 400;
+            color: var(--muted); line-height: 1.6; cursor: pointer; font-weight: 400;
         }
         .terms-row label a { color: var(--accent2); text-decoration: none; }
         .terms-row label a:hover { text-decoration: underline; }
 
-        /* submit */
+        /* ── Submit ── */
         .btn-submit {
-            width: 100%; padding: 14px;
+            width: 100%; min-height: 52px; padding: 14px;
             background: linear-gradient(135deg, var(--accent) 0%, #1d4ed8 100%);
             color: #fff; font-size: 15px; font-weight: 600;
             font-family: 'DM Sans', sans-serif;
@@ -314,45 +329,45 @@
             box-shadow: 0 4px 32px rgba(37,99,255,.40);
             transition: transform .2s, box-shadow .2s;
             animation: fadeUp .7s .58s cubic-bezier(.22,1,.36,1) both;
+            -webkit-tap-highlight-color: transparent;
         }
         .btn-submit::before {
             content: ''; position: absolute; inset: 0;
             background: linear-gradient(135deg, rgba(255,255,255,.14), transparent);
         }
-        .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 44px rgba(37,99,255,.6); }
-        .btn-submit:active { transform: translateY(0); }
+        .btn-submit:hover  { transform: translateY(-2px); box-shadow: 0 8px 44px rgba(37,99,255,.6); }
+        .btn-submit:active { transform: translateY(0); opacity: .9; }
         .btn-submit:disabled { opacity: .5; cursor: not-allowed; transform: none; }
 
-        /* divider */
+        /* ── Divider ── */
         .divider {
             display: flex; align-items: center; gap: 12px;
-            margin: 22px 0; color: var(--muted); font-size: 12px;
+            margin: 18px 0; color: var(--muted); font-size: 12px;
             animation: fadeUp .7s .63s cubic-bezier(.22,1,.36,1) both;
         }
         .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
-        /* login link */
+        /* ── Login link ── */
         .login-link {
             text-align: center; font-size: 13px; color: var(--muted);
             animation: fadeUp .7s .68s cubic-bezier(.22,1,.36,1) both;
         }
-        .login-link a { color: var(--accent2); text-decoration: none; font-weight: 500; }
+        .login-link a {
+            color: var(--accent2); text-decoration: none; font-weight: 500;
+            padding: 4px 2px;    /* tap target */
+        }
         .login-link a:hover { text-decoration: underline; }
 
-        /* flash */
+        /* ── Flash ── */
         .flash {
-            padding: 11px 15px; border-radius: 10px; font-size: 13px;
-            margin-bottom: 18px;
-            border: 1px solid rgba(255,77,109,.3); background: rgba(255,77,109,.08);
-            color: #ff8099;
+            padding: 11px 14px; border-radius: 10px; font-size: 13px;
+            margin-bottom: 16px; line-height: 1.5;
             animation: fadeUp .4s both;
         }
+        .flash.error   { border:1px solid rgba(255,77,109,.3); background:rgba(255,77,109,.08); color:#ff8099; }
+        .flash.success { border:1px solid rgba(0,229,195,.3);  background:rgba(0,229,195,.08);  color:var(--accent2); }
 
         @keyframes fadeUp { from{opacity:0;transform:translateY(22px)} to{opacity:1;transform:translateY(0)} }
-
-        /* scrollable form on short screens */
-        @media (max-height: 700px) { .form-panel { justify-content: flex-start; padding-top: 36px; overflow-y: auto; } }
-        @media (max-width: 480px)  { .form-panel { padding: 36px 24px; } .field-row { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
@@ -365,7 +380,7 @@
 
 <div class="page">
 
-    <!-- ── Left decorative panel ── -->
+    <!-- Left: campus photo (desktop only) -->
     <div class="deco-panel">
         <img class="campus-img" src="{{ url_for('static', filename='images/campus.png') }}" alt="JKUAT Campus">
         <div class="deco-overlay"></div>
@@ -384,36 +399,31 @@
             <div class="step-list">
                 <div class="step-item">
                     <div class="step-num">1</div>
-                    <div class="step-text">
-                        <strong>Create your account</strong>
-                        Use your JKUAT email to register instantly.
-                    </div>
+                    <div class="step-text"><strong>Create your account</strong>Use your JKUAT email to register instantly.</div>
                 </div>
                 <div class="step-item">
                     <div class="step-num">2</div>
-                    <div class="step-text">
-                        <strong>Set up your profile</strong>
-                        Choose your role — student or lecturer.
-                    </div>
+                    <div class="step-text"><strong>Set up your profile</strong>Choose your role — student or lecturer.</div>
                 </div>
                 <div class="step-item">
                     <div class="step-num">3</div>
-                    <div class="step-text">
-                        <strong>Access your timetable</strong>
-                        View conflict-free schedules in real time.
-                    </div>
+                    <div class="step-text"><strong>Access your timetable</strong>View conflict-free schedules in real time.</div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- ── Right form panel ── -->
+    <!-- Right: form -->
     <div class="form-panel">
         <div class="form-inner">
 
+            <!-- Mobile header -->
             <div class="mobile-brand">
                 <img src="{{ url_for('static', filename='images/jkuat-logo.png') }}" alt="JKUAT">
-                <span>JKUAT Scheduler</span>
+                <div class="mobile-brand-text">
+                    <strong>JKUAT Scheduler</strong>
+                    <small>Create your account</small>
+                </div>
             </div>
 
             <div class="form-head">
@@ -421,8 +431,10 @@
                 <p>Join the JKUAT Scheduler. It takes less than a minute.</p>
             </div>
 
-            {% with messages = get_flashed_messages() %}
-              {% if messages %}{% for msg in messages %}<div class="flash">{{ msg }}</div>{% endfor %}{% endif %}
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}{% for cat, msg in messages %}
+                <div class="flash {{ cat }}">{{ msg }}</div>
+              {% endfor %}{% endif %}
             {% endwith %}
 
             <form method="POST" id="reg-form">
@@ -448,6 +460,7 @@
                 </div>
 
                 <div class="fields">
+
                     <!-- Name row -->
                     <div class="field">
                         <div class="field-row">
@@ -455,18 +468,20 @@
                                 <label for="first_name">First name</label>
                                 <div class="input-wrap">
                                     <span class="i-icon">
-                                        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                                     </span>
-                                    <input type="text" id="first_name" name="first_name" placeholder="John" required autocomplete="given-name">
+                                    <input type="text" id="first_name" name="first_name"
+                                           placeholder="John" required autocomplete="given-name">
                                 </div>
                             </div>
                             <div>
                                 <label for="last_name">Last name</label>
                                 <div class="input-wrap">
                                     <span class="i-icon">
-                                        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                                     </span>
-                                    <input type="text" id="last_name" name="last_name" placeholder="Doe" required autocomplete="family-name">
+                                    <input type="text" id="last_name" name="last_name"
+                                           placeholder="Doe" required autocomplete="family-name">
                                 </div>
                             </div>
                         </div>
@@ -477,9 +492,13 @@
                         <label for="email">JKUAT Email</label>
                         <div class="input-wrap">
                             <span class="i-icon">
-                                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
                             </span>
-                            <input type="email" id="email" name="email" placeholder="jm100@students.jkuat.ac.ke" required autocomplete="email" oninput="validateEmail(this)">
+                            <input type="email" id="email" name="email"
+                                   placeholder="jm100@students.jkuat.ac.ke"
+                                   required autocomplete="email"
+                                   inputmode="email"
+                                   oninput="validateEmail(this)">
                         </div>
                         <div class="email-hint" id="email-hint">
                             <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
@@ -492,11 +511,16 @@
                         <label for="password">Password</label>
                         <div class="input-wrap">
                             <span class="i-icon">
-                                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                             </span>
-                            <input type="password" id="password" name="password" placeholder="Min. 8 characters" required autocomplete="new-password" oninput="checkStrength(this.value)">
-                            <button type="button" class="eye-btn" onclick="togglePwd('password','eye1')" aria-label="Toggle">
-                                <svg id="eye1" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                            <input type="password" id="password" name="password"
+                                   placeholder="Min. 8 characters"
+                                   required autocomplete="new-password"
+                                   oninput="checkStrength(this.value)">
+                            <button type="button" class="eye-btn" onclick="togglePwd('password','eye1')" aria-label="Toggle password">
+                                <svg id="eye1" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                                </svg>
                             </button>
                         </div>
                         <div class="pwd-meta">
@@ -509,7 +533,8 @@
                             <span class="strength-label" id="s-label"></span>
                         </div>
                     </div>
-                </div>
+
+                </div><!-- /fields -->
 
                 <!-- Terms -->
                 <div class="terms-row">
@@ -528,10 +553,10 @@
 
         </div>
     </div>
-</div>
+
+</div><!-- /page -->
 
 <script>
-    /* password visibility toggle */
     function togglePwd(inputId, iconId) {
         const inp  = document.getElementById(inputId);
         const icon = document.getElementById(iconId);
@@ -544,15 +569,14 @@
         }
     }
 
-    /* password strength */
     function checkStrength(val) {
-        const segs   = [s1, s2, s3, s4];
-        const label  = document.getElementById('s-label');
+        const segs  = [s1, s2, s3, s4];
+        const label = document.getElementById('s-label');
         let score = 0;
-        if (val.length >= 8)               score++;
-        if (/[A-Z]/.test(val))             score++;
-        if (/[0-9]/.test(val))             score++;
-        if (/[^A-Za-z0-9]/.test(val))      score++;
+        if (val.length >= 8)           score++;
+        if (/[A-Z]/.test(val))         score++;
+        if (/[0-9]/.test(val))         score++;
+        if (/[^A-Za-z0-9]/.test(val))  score++;
 
         const states = ['','weak','fair','fair','strong'];
         const labels = ['','Weak','Fair','Good','Strong'];
@@ -565,7 +589,6 @@
         label.style.color = val.length ? colors[score] : 'var(--muted)';
     }
 
-    /* email domain hint synced to role */
     document.querySelectorAll('input[name="role"]').forEach(r => {
         r.addEventListener('change', () => {
             const hint = document.getElementById('email-hint');
@@ -574,10 +597,9 @@
         });
     });
 
-    /* email validation */
     function validateEmail(input) {
-        const val    = input.value;
-        const valid  = val.endsWith('@students.jkuat.ac.ke') || val.endsWith('@jkuat.ac.ke');
+        const val   = input.value;
+        const valid = val.endsWith('@students.jkuat.ac.ke') || val.endsWith('@jkuat.ac.ke');
         input.style.borderColor = val.includes('@') && !valid ? 'rgba(255,77,109,.6)' : '';
     }
 </script>

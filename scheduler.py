@@ -75,10 +75,7 @@ def seed_rooms():
         ("Lab 1", 40, "lab", "ICT Block"),
         ("Lab 2", 40, "lab", "ICT Block"),
         ("Lab 3", 35, "lab", "ICT Block"),
-        ("Lab 4", 35, "lab", "Science Block"),
-        ("SR1", 30, "seminar", "Main Block"),
-        ("SR2", 30, "seminar", "Main Block"),
-        ("SR3", 25, "seminar", "Engineering Block"),
+        ("Lab 4", 35, "lab", "Science Block")
     ]
 
     for name, capacity, room_type, building in rooms:

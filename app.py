@@ -1,9 +1,13 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime
+from datetime import datetime, timedelta
 from sqlalchemy.exc import IntegrityError
 from flask_migrate import Migrate
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
 
 from models import db, User, School, Programme, Course, Room, Lecture, Enrollment, Notification
 from scheduler import (get_available_rooms, check_lecturer_conflict,
@@ -11,9 +15,10 @@ from scheduler import (get_available_rooms, check_lecturer_conflict,
                        seed_rooms, seed_schools_and_programmes, seed_sample_courses)
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'change-this-in-production'
+app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', 'fallback-key')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite3'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
 
 db.init_app(app)
 migrate = Migrate(app, db)
@@ -21,14 +26,17 @@ migrate = Migrate(app, db)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
-login_manager.login_message = 'Please log in to access this page.'
+login_manager.login_message = None
 
 
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-
+@app.before_request
+def refresh_session():
+    if current_user.is_authenticated:
+        session.permanent = True
 
 # LANDING
 @app.route('/')
@@ -96,6 +104,7 @@ def login():
 
         if user and check_password_hash(user.password, password):
             login_user(user)
+            session.permanent = True
             if current_user.role == 'admin':
                 return redirect(url_for('admin_dashboard'))
             elif current_user.role == 'lecturer':
@@ -112,6 +121,8 @@ def login():
 @login_required
 def logout():
     logout_user()
+    session.clear()
+    flash("You have been logged out.", "success")
     return redirect(url_for('login'))
 
 
@@ -465,4 +476,4 @@ def admin_assign_lecturer():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=int(os.getenv('PORT', 5000)), debug=True)
