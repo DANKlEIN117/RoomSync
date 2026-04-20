@@ -82,9 +82,9 @@ def register():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
-        if user.role == 'admin':
+        if current_user.role == 'admin':
             return redirect(url_for('admin_dashboard'))
-        elif user.role == 'lecturer':
+        elif current_user.role == 'lecturer':
             return redirect(url_for('lecturer_dashboard'))
         else:
             return redirect(url_for('student_dashboard'))
@@ -121,7 +121,7 @@ def logout():
 @login_required
 def student_dashboard():
     if current_user.role != 'student':
-        return redirect(url_for('lecturer_dashboard'))
+        return redirect(url_for('login'))
 
     # Only lectures for courses the student is enrolled in
     enrolled_ids = [e.course_id for e in current_user.enrollments]
@@ -162,7 +162,7 @@ def mark_notifications_read():
 @login_required
 def profile():
     if current_user.role != 'student':
-        return redirect(url_for('lecturer_dashboard'))
+        return redirect(url_for('login'))
 
     schools     = School.query.order_by(School.name).all()
     enrolled    = {e.course_id for e in current_user.enrollments}
@@ -232,7 +232,7 @@ def api_courses(programme_id):
 @login_required
 def lecturer_dashboard():
     if current_user.role != 'lecturer':
-        return redirect(url_for('student_dashboard'))
+        return redirect(url_for('login'))
 
     lectures = Lecture.query\
         .filter_by(lecturer_id=current_user.id)\
